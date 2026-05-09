@@ -197,7 +197,7 @@ Make more than 10 login attempts per minute.
 4. Render auto-detects `render.yaml`
 5. HTTPS is provided automatically
 
-## Viva Talking Points
+##Points 
 
 - **bcrypt**: adaptive hashing algorithm; cost factor makes brute-force expensive
 - **CSRF tokens**: unique per-session token in every form; server validates before processing
