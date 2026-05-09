@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if purpose == 'registration' %}Verify Email – SecureVote{% else %}OTP Verification – SecureVote{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card auth-card border-0 shadow-lg">
+        <div class="card-body p-5 text-center">
+
+          {% if purpose == 'registration' %}
+            <i class="fas fa-envelope-open-text fa-3x text-success mb-3"></i>
+            <h2 class="fw-bold text-white mb-2">Verify Your Email</h2>
+            <p class="text-muted mb-1">We sent a 6-digit code to:</p>
+            <p class="text-light fw-semibold mb-4">{{ email }}</p>
+            <div class="alert alert-success text-start py-2 px-3 mb-4" style="font-size:0.85rem">
+              <i class="fas fa-info-circle me-1"></i>
+              Enter the OTP to <strong>confirm your email</strong> and create your account.
+            </div>
+          {% else %}
+            <i class="fas fa-mobile-alt fa-3x text-warning mb-3"></i>
+            <h2 class="fw-bold text-white mb-2">Two-Factor Verification</h2>
+            <p class="text-muted mb-1">A login OTP has been sent to:</p>
+            <p class="text-light fw-semibold mb-4">{{ email }}</p>
+          {% endif %}
+
+          <form method="POST" id="otpForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            <div class="mb-4">
+              <input type="text" inputmode="numeric"
+                     class="form-control form-control-lg text-center bg-dark text-white border-secondary otp-input"
+                     id="otp" name="otp" placeholder="_ _ _ _ _ _"
+                     maxlength="6" pattern="\d{6}" required autocomplete="one-time-code" />
+              <div class="form-text text-muted mt-2">
+                <i class="fas fa-clock me-1"></i>Expires in
+                <span id="countdown" class="text-warning fw-bold">5:00</span>
+              </div>
+            </div>
+
+            <button type="submit" class="btn w-100 py-2 fw-semibold
+              {% if purpose == 'registration' %}btn-success{% else %}btn-warning text-dark{% endif %}">
+              <i class="fas fa-check-circle me-2"></i>
+              {% if purpose == 'registration' %}Verify &amp; Create Account{% else %}Verify OTP{% endif %}
+            </button>
+          </form>
+
+          <div class="mt-4">
+            {% if purpose == 'registration' %}
+              <a href="{{ url_for('auth.register') }}" class="text-muted small">
+                <i class="fas fa-arrow-left me-1"></i>Back to Registration
+              </a>
+            {% else %}
+              <a href="{{ url_for('auth.login') }}" class="text-muted small">
+                <i class="fas fa-arrow-left me-1"></i>Back to Login
+              </a>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Security note -->
+      <div class="text-center mt-3">
+        <small class="text-muted">
+          <i class="fas fa-shield-alt me-1 text-success"></i>
+          OTP expires in 5 minutes and is single-use
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Countdown timer
+  let seconds = 300;
+  const el = document.getElementById('countdown');
+  const submitBtn = document.querySelector('button[type=submit]');
+  const timer = setInterval(() => {
+    seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    if (seconds <= 0) {
+      clearInterval(timer);
+      el.textContent = 'Expired';
+      el.classList.replace('text-warning', 'text-danger');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'OTP Expired – go back and try again';
+    }
+  }, 1000);
+
+  // Only allow digits in the OTP field
+  document.getElementById('otp').addEventListener('input', function () {
+    this.value = this.value.replace(/\D/g, '').slice(0, 6);
+  });
+</script>
+{% endblock %}

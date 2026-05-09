@@ -1,0 +1,197 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Admin Dashboard – SecureVote{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h3 class="text-white fw-bold">
+    <i class="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
+  </h3>
+  <p class="text-muted">Overview of the voting system</p>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-4 mb-5">
+  <div class="col-md-3">
+    <div class="card admin-stat-card border-0 shadow">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Total Voters</p>
+            <h3 class="text-white fw-bold mb-0">{{ total_users }}</h3>
+          </div>
+          <div class="stat-icon bg-primary-soft">
+            <i class="fas fa-users text-primary fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card admin-stat-card border-0 shadow">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Votes Cast</p>
+            <h3 class="text-white fw-bold mb-0">{{ total_votes }}</h3>
+          </div>
+          <div class="stat-icon bg-success-soft">
+            <i class="fas fa-check-circle text-success fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card admin-stat-card border-0 shadow">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Candidates</p>
+            <h3 class="text-white fw-bold mb-0">{{ total_candidates }}</h3>
+          </div>
+          <div class="stat-icon bg-info-soft">
+            <i class="fas fa-user-tie text-info fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card admin-stat-card border-0 shadow">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <p class="text-muted small mb-1">Election Status</p>
+            <h3 class="fw-bold mb-0 {% if election %}text-success{% else %}text-secondary{% endif %}">
+              {% if election %}Active{% else %}Inactive{% endif %}
+            </h3>
+          </div>
+          <div class="stat-icon bg-warning-soft">
+            <i class="fas fa-poll text-warning fa-2x"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Live Chart -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow h-100">
+      <div class="card-header bg-transparent border-secondary d-flex justify-content-between align-items-center">
+        <h6 class="text-white fw-bold mb-0">
+          <i class="fas fa-chart-pie me-2 text-info"></i>Live Vote Distribution
+        </h6>
+        <span class="badge bg-success blink-badge">
+          <i class="fas fa-circle me-1" style="font-size:8px"></i>Live
+        </span>
+      </div>
+      <div class="card-body p-4">
+        <canvas id="adminChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow h-100">
+      <div class="card-header bg-transparent border-secondary">
+        <h6 class="text-white fw-bold mb-0">
+          <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+        </h6>
+      </div>
+      <div class="card-body p-4 d-flex flex-column gap-3">
+        <a href="{{ url_for('admin.add_candidate') }}" class="btn btn-primary">
+          <i class="fas fa-user-plus me-2"></i>Add Candidate
+        </a>
+        <a href="{{ url_for('admin.manage_election') }}" class="btn btn-{% if election %}danger{% else %}success{% endif %}">
+          <i class="fas fa-{% if election %}stop-circle{% else %}play-circle{% endif %} me-2"></i>
+          {% if election %}Manage Election{% else %}Create Election{% endif %}
+        </a>
+        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-info text-dark">
+          <i class="fas fa-user-cog me-2"></i>Manage Voters
+        </a>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-secondary">
+          <i class="fas fa-file-alt me-2"></i>View Audit Logs
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Audit Logs -->
+<div class="card border-0 shadow mt-4">
+  <div class="card-header bg-transparent border-secondary">
+    <h6 class="text-white fw-bold mb-0">
+      <i class="fas fa-history me-2 text-warning"></i>Recent Activity
+    </h6>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in recent_logs %}
+          <tr>
+            <td><small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</small></td>
+            <td>
+              {% if log.user %}
+                <span class="badge bg-secondary">{{ log.user.username }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge
+                {% if 'FAIL' in log.action or 'DELETE' in log.action %}bg-danger
+                {% elif 'LOGIN' in log.action %}bg-success
+                {% elif 'VOTE' in log.action %}bg-primary
+                {% else %}bg-secondary{% endif %}">
+                {{ log.action }}
+              </span>
+            </td>
+            <td><small class="text-muted">{{ log.ip_address or '—' }}</small></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const labels = [{% for c in candidates %}"{{ c.name | e }}",{% endfor %}];
+  const votes  = [{% for c in candidates %}{{ c.vote_count }},{% endfor %}];
+  const colors = ['#0d6efd','#198754','#ffc107','#dc3545','#0dcaf0','#6f42c1'];
+
+  const ctx = document.getElementById('adminChart');
+  if (ctx) {
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data: votes, backgroundColor: colors, borderWidth: 2, borderColor: '#1a1d23' }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#adb5bd', padding: 15 } }
+        }
+      }
+    });
+  }
+
+  // Auto-refresh every 30s
+  setTimeout(() => location.reload(), 30000);
+</script>
+{% endblock %}

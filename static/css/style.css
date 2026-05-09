@@ -1,0 +1,182 @@
+/* ============================================================
+   SecureVote – Main Stylesheet
+   Dark blue / white / green accent theme
+   ============================================================ */
+
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --bg-primary:    #0d1117;
+  --bg-secondary:  #161b22;
+  --bg-card:       #1c2128;
+  --bg-card-hover: #21262d;
+  --accent-blue:   #0d6efd;
+  --accent-green:  #198754;
+  --accent-gold:   #ffc107;
+  --text-primary:  #e6edf3;
+  --text-muted:    #8b949e;
+  --border-color:  #30363d;
+  --sidebar-width: 260px;
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main { flex: 1; }
+
+/* ── Navbar ────────────────────────────────────────────────── */
+.bg-primary-dark { background-color: #0a0f1a !important; }
+
+.navbar-brand {
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+}
+
+/* ── Hero Section ──────────────────────────────────────────── */
+.hero-section {
+  background: linear-gradient(135deg, #0a0f1a 0%, #0d2040 50%, #0a1628 100%);
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+
+.hero-icon { animation: float 3s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+
+/* ── Cards ─────────────────────────────────────────────────── */
+.card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover { transform: translateY(-2px); }
+
+.security-card { background-color: var(--bg-card); }
+.security-card:hover { background-color: var(--bg-card-hover); }
+
+.stat-card { background-color: var(--bg-card); }
+
+/* ── Candidate Cards ───────────────────────────────────────── */
+.candidate-card { background-color: var(--bg-card); }
+
+.candidate-photo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent-blue);
+}
+
+.candidate-photo-lg {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--accent-green);
+}
+
+.candidate-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ── Vote Page ─────────────────────────────────────────────── */
+.candidate-vote-card { cursor: pointer; }
+
+.candidate-option {
+  background-color: var(--bg-card);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.candidate-option:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--accent-blue) !important;
+}
+
+.bg-success-subtle { background-color: rgba(25, 135, 84, 0.15) !important; }
+
+/* ── Auth Cards ────────────────────────────────────────────── */
+.auth-card { background-color: var(--bg-card); }
+
+.otp-input {
+  font-size: 2rem;
+  letter-spacing: 0.5rem;
+  font-weight: bold;
+}
+
+/* ── Winner Card ───────────────────────────────────────────── */
+.winner-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(25,135,84,0.15) 100%);
+  border-color: var(--accent-green) !important;
+}
+
+/* ── Forms ─────────────────────────────────────────────────── */
+.form-control:focus {
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25) !important;
+  background-color: #1c2128 !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control::placeholder { color: var(--text-muted); }
+
+/* ── Tables ────────────────────────────────────────────────── */
+.table-dark {
+  --bs-table-bg: var(--bg-card);
+  --bs-table-hover-bg: var(--bg-card-hover);
+  --bs-table-border-color: var(--border-color);
+}
+
+/* ── Badges ────────────────────────────────────────────────── */
+.blink { animation: blink 1.5s infinite; }
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.blink-badge { animation: blink 2s infinite; }
+
+/* ── Footer ────────────────────────────────────────────────── */
+.footer { background-color: #0a0f1a !important; }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero-section { min-height: 50vh; }
+  .candidate-photo { width: 70px; height: 70px; }
+}
+
+/* ── Success animation ─────────────────────────────────────── */
+.success-animation {
+  animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes pop {
+  0%   { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── Background sections ───────────────────────────────────── */
+.bg-dark-secondary { background-color: var(--bg-secondary); }

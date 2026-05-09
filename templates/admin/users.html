@@ -1,0 +1,85 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Manage Users – Admin{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h3 class="text-white fw-bold">
+    <i class="fas fa-user-cog me-2 text-info"></i>Voter Management
+  </h3>
+  <p class="text-muted">{{ users|length }} registered voters</p>
+</div>
+
+<div class="card border-0 shadow">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Registered</th>
+            <th>Last Login</th>
+            <th>Voted</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td class="fw-semibold">{{ user.username }}</td>
+            <td class="text-muted small">{{ user.email }}</td>
+            <td><small class="text-muted">{{ user.created_at.strftime('%Y-%m-%d') }}</small></td>
+            <td>
+              <small class="text-muted">
+                {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '—' }}
+              </small>
+            </td>
+            <td>
+              {% if user.has_voted %}
+                <span class="badge bg-success">Yes</span>
+              {% else %}
+                <span class="badge bg-secondary">No</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if user.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-danger">Disabled</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                <form method="POST" action="{{ url_for('admin.toggle_user', uid=user.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button type="submit" class="btn btn-sm btn-outline-{% if user.is_active %}warning{% else %}success{% endif %}"
+                          title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
+                    <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
+                  </button>
+                </form>
+                {% if user.has_voted %}
+                <form method="POST" action="{{ url_for('admin.reset_vote', uid=user.id) }}"
+                      onsubmit="return confirm('Reset vote for {{ user.username }}?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Reset Vote">
+                    <i class="fas fa-undo"></i>
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="8" class="text-center text-muted py-4">No voters registered yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

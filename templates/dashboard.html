@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Voter Dashboard – SecureVote{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="text-white fw-bold">
+        <i class="fas fa-home me-2 text-primary"></i>
+        Welcome, {{ current_user.username }}
+      </h2>
+      <p class="text-muted">Your voter dashboard</p>
+    </div>
+  </div>
+
+  <!-- Status Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card stat-card border-0 shadow h-100">
+        <div class="card-body p-4 text-center">
+          <i class="fas fa-{% if current_user.has_voted %}check-circle text-success{% else %}circle text-warning{% endif %} fa-3x mb-3"></i>
+          <h5 class="text-white fw-bold">Vote Status</h5>
+          {% if current_user.has_voted %}
+            <span class="badge bg-success fs-6">Vote Cast ✓</span>
+          {% else %}
+            <span class="badge bg-warning text-dark fs-6">Not Voted Yet</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card stat-card border-0 shadow h-100">
+        <div class="card-body p-4 text-center">
+          <i class="fas fa-{% if election %}play-circle text-success{% else %}pause-circle text-secondary{% endif %} fa-3x mb-3"></i>
+          <h5 class="text-white fw-bold">Election Status</h5>
+          {% if election %}
+            <span class="badge bg-success fs-6">
+              <i class="fas fa-circle blink me-1"></i>Active
+            </span>
+            <p class="text-muted small mt-2">{{ election.title }}</p>
+          {% else %}
+            <span class="badge bg-secondary fs-6">No Active Election</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card stat-card border-0 shadow h-100">
+        <div class="card-body p-4 text-center">
+          <i class="fas fa-users fa-3x text-info mb-3"></i>
+          <h5 class="text-white fw-bold">Candidates</h5>
+          <span class="badge bg-info fs-6">{{ candidates|length }} Running</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="row g-3 mb-5">
+    {% if not current_user.has_voted and election %}
+    <div class="col-md-4">
+      <a href="{{ url_for('voter.vote') }}" class="btn btn-success btn-lg w-100 py-3">
+        <i class="fas fa-check-circle me-2"></i>Cast Your Vote
+      </a>
+    </div>
+    {% endif %}
+    <div class="col-md-4">
+      <a href="{{ url_for('voter.results') }}" class="btn btn-primary btn-lg w-100 py-3">
+        <i class="fas fa-chart-bar me-2"></i>View Results
+      </a>
+    </div>
+  </div>
+
+  <!-- Candidates Preview -->
+  {% if candidates %}
+  <h4 class="text-white fw-bold mb-4">
+    <i class="fas fa-users me-2 text-info"></i>Candidates
+  </h4>
+  <div class="row g-4">
+    {% for c in candidates %}
+    <div class="col-md-4 col-lg-3">
+      <div class="card candidate-card border-0 shadow text-center h-100">
+        <div class="card-body p-4">
+          <img src="{{ url_for('static', filename='uploads/' + c.photo) }}"
+               alt="{{ c.name }}" class="candidate-photo mb-3"
+               onerror="this.src='{{ url_for('static', filename='images/default_candidate.png') }}'">
+          <h6 class="text-white fw-bold">{{ c.name }}</h6>
+          <span class="badge bg-primary">{{ c.party }}</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

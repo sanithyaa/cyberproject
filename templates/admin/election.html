@@ -1,0 +1,100 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Manage Election – Admin{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h3 class="text-white fw-bold">
+    <i class="fas fa-poll me-2 text-warning"></i>Election Management
+  </h3>
+</div>
+
+{% if election %}
+<!-- Election exists -->
+<div class="card border-0 shadow mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h5 class="text-white fw-bold">{{ election.title }}</h5>
+        <p class="text-muted mb-1">{{ election.description or 'No description.' }}</p>
+        <small class="text-muted">Created: {{ election.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+      </div>
+      <span class="badge fs-6 {% if election.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+        {% if election.is_active %}
+          <i class="fas fa-circle blink me-1" style="font-size:8px"></i>Active
+        {% else %}
+          Inactive
+        {% endif %}
+      </span>
+    </div>
+
+    {% if election.start_time %}
+    <p class="text-muted small mb-1">
+      <i class="fas fa-play me-1 text-success"></i>Started: {{ election.start_time.strftime('%Y-%m-%d %H:%M') }}
+    </p>
+    {% endif %}
+    {% if election.end_time %}
+    <p class="text-muted small">
+      <i class="fas fa-stop me-1 text-danger"></i>Ended: {{ election.end_time.strftime('%Y-%m-%d %H:%M') }}
+    </p>
+    {% endif %}
+
+    <div class="d-flex gap-3 mt-4 flex-wrap">
+      {% if not election.is_active %}
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="action" value="start" />
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-play me-2"></i>Start Election
+        </button>
+      </form>
+      {% else %}
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="action" value="stop" />
+        <button type="submit" class="btn btn-danger">
+          <i class="fas fa-stop me-2"></i>Stop Election
+        </button>
+      </form>
+      {% endif %}
+
+      <form method="POST" onsubmit="return confirm('Delete this election? All vote data will be lost.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="action" value="delete" />
+        <button type="submit" class="btn btn-outline-danger">
+          <i class="fas fa-trash me-2"></i>Delete Election
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- No election – create one -->
+<div class="card border-0 shadow">
+  <div class="card-body p-5">
+    <div class="text-center mb-4">
+      <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+      <h5 class="text-white">Create New Election</h5>
+    </div>
+    <form method="POST" novalidate>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <input type="hidden" name="action" value="create" />
+
+      <div class="mb-3">
+        <label class="form-label text-light">Election Title *</label>
+        <input type="text" class="form-control bg-dark text-white border-secondary"
+               name="title" required maxlength="200" placeholder="e.g. General Election 2025" />
+      </div>
+      <div class="mb-4">
+        <label class="form-label text-light">Description</label>
+        <textarea class="form-control bg-dark text-white border-secondary"
+                  name="description" rows="3" placeholder="Optional description"></textarea>
+      </div>
+      <button type="submit" class="btn btn-success px-4">
+        <i class="fas fa-plus me-2"></i>Create Election
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

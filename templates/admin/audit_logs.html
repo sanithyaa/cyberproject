@@ -1,0 +1,91 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Audit Logs – Admin{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <h3 class="text-white fw-bold">
+    <i class="fas fa-file-alt me-2 text-warning"></i>Audit Logs
+  </h3>
+  <p class="text-muted">Immutable record of all system events</p>
+</div>
+
+<div class="card border-0 shadow">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Detail</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs.items %}
+          <tr>
+            <td class="text-muted small">{{ log.id }}</td>
+            <td><small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+            <td>
+              {% if log.user %}
+                <span class="badge bg-secondary">{{ log.user.username }}</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge
+                {% if 'FAIL' in log.action or 'DELETE' in log.action %}bg-danger
+                {% elif 'LOGIN_SUCCESS' in log.action or 'VOTE' in log.action %}bg-success
+                {% elif 'LOGIN' in log.action %}bg-warning text-dark
+                {% elif 'REGISTER' in log.action %}bg-info text-dark
+                {% else %}bg-secondary{% endif %}">
+                {{ log.action }}
+              </span>
+            </td>
+            <td><small class="text-muted">{{ log.detail or '—' }}</small></td>
+            <td><small class="text-muted font-monospace">{{ log.ip_address or '—' }}</small></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">No audit logs yet.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Pagination -->
+{% if logs.pages > 1 %}
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if logs.has_prev %}
+    <li class="page-item">
+      <a class="page-link bg-dark text-white border-secondary"
+         href="{{ url_for('admin.audit_logs', page=logs.prev_num) }}">Previous</a>
+    </li>
+    {% endif %}
+    {% for p in logs.iter_pages() %}
+      {% if p %}
+      <li class="page-item {% if p == logs.page %}active{% endif %}">
+        <a class="page-link bg-dark text-white border-secondary"
+           href="{{ url_for('admin.audit_logs', page=p) }}">{{ p }}</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link bg-dark border-secondary">…</span></li>
+      {% endif %}
+    {% endfor %}
+    {% if logs.has_next %}
+    <li class="page-item">
+      <a class="page-link bg-dark text-white border-secondary"
+         href="{{ url_for('admin.audit_logs', page=logs.next_num) }}">Next</a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

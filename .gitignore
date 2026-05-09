@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.db
+*.sqlite3
+instance/
+.venv/
+venv/
+env/
+static/uploads/*
+!static/uploads/.gitkeep
+static/images/default_candidate.png
+*.log
+.DS_Store

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}About – SecureVote{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+    <h2 class="text-white fw-bold">About SecureVote</h2>
+    <p class="text-muted lead">A cybersecurity-focused online voting platform</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow h-100">
+        <div class="card-body p-4">
+          <h5 class="text-white fw-bold mb-3">
+            <i class="fas fa-lock me-2 text-primary"></i>Security Architecture
+          </h5>
+          <ul class="list-unstyled text-muted">
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>bcrypt password hashing (cost factor 12)</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Flask-WTF CSRF protection on all forms</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>SQLAlchemy ORM – parameterised queries only</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Jinja2 auto-escaping prevents XSS</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Role-based access control (Admin / Voter)</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Rate limiting on login (brute-force prevention)</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>TOTP-based OTP two-factor authentication</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Secure HTTP headers (CSP, X-Frame-Options, etc.)</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Session timeout after 30 minutes</li>
+            <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Immutable audit trail for all actions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow h-100">
+        <div class="card-body p-4">
+          <h5 class="text-white fw-bold mb-3">
+            <i class="fas fa-code me-2 text-info"></i>Tech Stack
+          </h5>
+          <ul class="list-unstyled text-muted">
+            <li class="mb-2"><i class="fab fa-python text-warning me-2"></i>Python Flask (backend)</li>
+            <li class="mb-2"><i class="fas fa-database text-info me-2"></i>SQLite / MySQL (database)</li>
+            <li class="mb-2"><i class="fab fa-bootstrap text-primary me-2"></i>Bootstrap 5 (UI)</li>
+            <li class="mb-2"><i class="fas fa-chart-bar text-success me-2"></i>Chart.js (analytics)</li>
+            <li class="mb-2"><i class="fas fa-shield-alt text-danger me-2"></i>Flask-WTF (CSRF)</li>
+            <li class="mb-2"><i class="fas fa-key text-warning me-2"></i>Flask-Bcrypt (hashing)</li>
+            <li class="mb-2"><i class="fas fa-user-lock text-primary me-2"></i>Flask-Login (sessions)</li>
+            <li class="mb-2"><i class="fas fa-tachometer-alt text-danger me-2"></i>Flask-Limiter (rate limiting)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attack Prevention Demo -->
+  <div class="card border-0 shadow mt-4">
+    <div class="card-body p-4">
+      <h5 class="text-white fw-bold mb-4">
+        <i class="fas fa-bug me-2 text-danger"></i>Attack Prevention
+      </h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="p-3 bg-dark rounded border border-danger">
+            <h6 class="text-danger fw-bold">SQL Injection</h6>
+            <code class="text-muted small">&#39; OR &#39;1&#39;=&#39;1</code>
+            <p class="text-muted small mt-2 mb-0">
+              Blocked by SQLAlchemy ORM parameterised queries.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-dark rounded border border-warning">
+            <h6 class="text-warning fw-bold">XSS Attack</h6>
+            <code class="text-muted small">&lt;script&gt;alert(1)&lt;/script&gt;</code>
+            <p class="text-muted small mt-2 mb-0">
+              Blocked by Jinja2 auto-escaping and input sanitisation.
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3 bg-dark rounded border border-info">
+            <h6 class="text-info fw-bold">CSRF Attack</h6>
+            <code class="text-muted small">Forged form submission</code>
+            <p class="text-muted small mt-2 mb-0">
+              Blocked by Flask-WTF CSRF tokens on every form.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

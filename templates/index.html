@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Home – SecureVote{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section class="hero-section text-white text-center py-5">
+  <div class="container py-4">
+    <div class="hero-icon mb-4">
+      <i class="fas fa-vote-yea fa-4x text-success"></i>
+    </div>
+    <h1 class="display-4 fw-bold mb-3">Secure Online Voting System</h1>
+    <p class="lead mb-4 opacity-90">
+      Cast your vote safely and securely. Protected by industry-standard encryption,
+      CSRF tokens, and role-based access control.
+    </p>
+    {% if current_user.is_authenticated %}
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-lg me-2">
+          <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+        </a>
+      {% else %}
+        <a href="{{ url_for('voter.vote') }}" class="btn btn-success btn-lg me-2">
+          <i class="fas fa-check-circle me-2"></i>Cast Your Vote
+        </a>
+        <a href="{{ url_for('voter.results') }}" class="btn btn-outline-light btn-lg">
+          <i class="fas fa-chart-bar me-2"></i>View Results
+        </a>
+      {% endif %}
+    {% else %}
+      <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg me-2">
+        <i class="fas fa-user-plus me-2"></i>Register to Vote
+      </a>
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">
+        <i class="fas fa-sign-in-alt me-2"></i>Login
+      </a>
+    {% endif %}
+
+    {% if election %}
+    <div class="mt-4">
+      <span class="badge bg-success fs-6 px-3 py-2">
+        <i class="fas fa-circle me-1 blink"></i>Election Active: {{ election.title }}
+      </span>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Security Features -->
+<section class="py-5 bg-dark-secondary">
+  <div class="container">
+    <h2 class="text-center text-white mb-5 fw-bold">
+      <i class="fas fa-shield-alt me-2 text-success"></i>Security Features
+    </h2>
+    <div class="row g-4">
+      {% set features = [
+        ('lock', 'Password Hashing', 'Passwords are hashed with bcrypt — never stored in plain text.', 'success'),
+        ('user-shield', 'Role-Based Access', 'Admins and voters have strictly separated permissions.', 'info'),
+        ('key', 'CSRF Protection', 'Every form is protected with a unique CSRF token.', 'warning'),
+        ('database', 'SQL Injection Safe', 'All queries use parameterised statements via SQLAlchemy ORM.', 'danger'),
+        ('code', 'XSS Prevention', 'All user inputs are sanitised and HTML-escaped before rendering.', 'primary'),
+        ('mobile-alt', 'OTP Verification', 'Two-factor authentication via one-time passwords.', 'success'),
+        ('clock', 'Session Timeout', 'Sessions expire automatically after 30 minutes of inactivity.', 'info'),
+        ('file-alt', 'Audit Logs', 'Every action is recorded in an immutable audit trail.', 'warning'),
+      ] %}
+      {% for icon, title, desc, color in features %}
+      <div class="col-md-6 col-lg-3">
+        <div class="card security-card h-100 border-0 shadow-sm">
+          <div class="card-body text-center p-4">
+            <div class="feature-icon mb-3">
+              <i class="fas fa-{{ icon }} fa-2x text-{{ color }}"></i>
+            </div>
+            <h5 class="card-title text-white fw-semibold">{{ title }}</h5>
+            <p class="card-text text-muted small">{{ desc }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Candidates Preview -->
+{% if candidates %}
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center text-white mb-5 fw-bold">
+      <i class="fas fa-users me-2 text-info"></i>Candidates
+    </h2>
+    <div class="row g-4 justify-content-center">
+      {% for c in candidates %}
+      <div class="col-md-4 col-lg-3">
+        <div class="card candidate-card border-0 shadow text-center h-100">
+          <div class="card-body p-4">
+            <img src="{{ url_for('static', filename='uploads/' + c.photo) }}"
+                 alt="{{ c.name }}" class="candidate-photo mb-3"
+                 onerror="this.src='{{ url_for('static', filename='images/default_candidate.png') }}'">
+            <h5 class="text-white fw-bold">{{ c.name }}</h5>
+            <span class="badge bg-primary">{{ c.party }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

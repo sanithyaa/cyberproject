@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Admin – SecureVote{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="admin-body">
+
+<div class="d-flex" id="wrapper">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+  <nav id="sidebar" class="sidebar d-flex flex-column">
+    <div class="sidebar-header p-4 text-center border-bottom border-secondary">
+      <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+      <h5 class="text-white fw-bold mb-0">SecureVote</h5>
+      <small class="text-muted">Admin Panel</small>
+    </div>
+
+    <div class="sidebar-user p-3 border-bottom border-secondary">
+      <div class="d-flex align-items-center gap-2">
+        <div class="avatar-circle">
+          <i class="fas fa-user-shield text-white"></i>
+        </div>
+        <div>
+          <div class="text-white fw-semibold small">{{ current_user.username }}</div>
+          <div class="text-muted" style="font-size:11px">Administrator</div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="nav flex-column p-3 flex-grow-1">
+      <li class="nav-item mb-1">
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="nav-link sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+          <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{{ url_for('admin.candidates') }}"
+           class="nav-link sidebar-link {% if 'candidate' in request.endpoint %}active{% endif %}">
+          <i class="fas fa-users me-2"></i>Candidates
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{{ url_for('admin.manage_election') }}"
+           class="nav-link sidebar-link {% if request.endpoint == 'admin.manage_election' %}active{% endif %}">
+          <i class="fas fa-poll me-2"></i>Election
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{{ url_for('admin.manage_users') }}"
+           class="nav-link sidebar-link {% if request.endpoint == 'admin.manage_users' %}active{% endif %}">
+          <i class="fas fa-user-cog me-2"></i>Users
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{{ url_for('admin.results') }}"
+           class="nav-link sidebar-link {% if request.endpoint == 'admin.results' %}active{% endif %}">
+          <i class="fas fa-chart-bar me-2"></i>Results
+        </a>
+      </li>
+      <li class="nav-item mb-1">
+        <a href="{{ url_for('admin.audit_logs') }}"
+           class="nav-link sidebar-link {% if request.endpoint == 'admin.audit_logs' %}active{% endif %}">
+          <i class="fas fa-file-alt me-2"></i>Audit Logs
+        </a>
+      </li>
+    </ul>
+
+    <div class="p-3 border-top border-secondary">
+      <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100 btn-sm">
+        <i class="fas fa-sign-out-alt me-2"></i>Logout
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── Main Content ─────────────────────────────────────────────────────── -->
+  <div id="page-content" class="flex-grow-1">
+    <!-- Top bar -->
+    <div class="admin-topbar d-flex align-items-center justify-content-between px-4 py-3">
+      <button class="btn btn-sm btn-outline-secondary" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="d-flex align-items-center gap-3">
+        <span class="text-muted small">
+          <i class="fas fa-clock me-1"></i>
+          <span id="currentTime"></span>
+        </span>
+        <a href="{{ url_for('public.index') }}" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-external-link-alt me-1"></i>View Site
+        </a>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div class="px-4 pt-2">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Page content -->
+    <div class="p-4">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+  // Sidebar toggle
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  });
+  // Live clock
+  function updateClock() {
+    document.getElementById('currentTime').textContent =
+      new Date().toLocaleTimeString();
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
