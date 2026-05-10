@@ -1,6 +1,6 @@
 # Secure Online Voting System
 
-A full-stack cybersecurity-focused online voting platform built with Python Flask.
+A full-stack cybersecurity-focused online voting platform built with Python FLASK.
 
 ## Security Features
 
