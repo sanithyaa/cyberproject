@@ -25,9 +25,9 @@
               <input type="radio" name="candidate_id" id="candidate_{{ c.id }}"
                      value="{{ c.id }}" class="d-none candidate-radio" required />
               <div class="card border-2 border-secondary h-100 text-center p-4 candidate-option">
-                <img src="{{ url_for('static', filename='uploads/' + c.photo) }}"
-                     alt="{{ c.name }}" class="candidate-photo mx-auto mb-3"
-                     onerror="this.src='{{ url_for('static', filename='images/default_candidate.png') }}'">
+       <img src="{{ url_for('static', filename='uploads/' + (c.photo or 'default_candidate.svg')) }}"
+         alt="{{ c.name }}" class="candidate-photo mx-auto mb-3"
+         data-default-src="{{ url_for('static', filename='images/default_candidate.svg') }}">
                 <h5 class="text-white fw-bold">{{ c.name }}</h5>
                 <span class="badge bg-primary mb-2">{{ c.party }}</span>
                 {% if c.bio %}
@@ -92,12 +92,12 @@
   const form       = document.getElementById('voteForm');
   const modal      = new bootstrap.Modal(document.getElementById('voteModal'));
 
-  // Candidate names map
-  const names = {
-    {% for c in candidates %}
-    {{ c.id }}: "{{ c.name | e }}",
-    {% endfor %}
-  };
+  // Candidate names map (JSON block to avoid inline Jinja inside JS)
+</script>
+<script id="candidates-data" type="application/json">{{ [{'id': c.id, 'name': c.name} for c in candidates]|tojson }}</script>
+<script>
+  const candidatesData = JSON.parse(document.getElementById('candidates-data').textContent || '[]');
+  const names = Object.fromEntries(candidatesData.map(c => [String(c.id), c.name]));
 
   radios.forEach(radio => {
     radio.addEventListener('change', function () {

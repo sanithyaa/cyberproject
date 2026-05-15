@@ -3,46 +3,46 @@
 
 {% block content %}
 <div class="mb-4">
-  <h3 class="text-white fw-bold">
-    <i class="fas fa-chart-bar me-2 text-info"></i>Election Results
+  <h3 class="fw-bold text-dark">
+    <i class="fas fa-chart-bar me-2 text-muted"></i>Election Results
   </h3>
-  <p class="text-muted">Total votes: <strong class="text-white">{{ total_votes }}</strong></p>
+  <p class="text-muted">Total votes: <strong class="text-dark">{{ total_votes }}</strong></p>
 </div>
 
 {% if winner and total_votes > 0 %}
-<div class="card border-success shadow mb-4">
+<div class="card shadow mb-4" style="border:1px solid #E5E7EB;">
   <div class="card-body text-center p-4">
     <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-    <h5 class="text-white fw-bold">Current Leader: {{ winner.name }}</h5>
+  <h5 class="text-dark fw-bold winner-name">Current Leader: {{ winner.name }}</h5>
     <span class="badge bg-primary">{{ winner.party }}</span>
-    <p class="text-success mt-2 mb-0">{{ winner.votes }} votes ({{ winner.percentage }}%)</p>
+    <p class="text-dark mt-2 mb-0">{{ winner.votes }} votes ({{ winner.percentage }}%)</p>
   </div>
 </div>
 {% endif %}
 
 <div class="row g-4">
   <div class="col-lg-6">
-    <div class="card border-0 shadow">
+    <div class="card mb-0" style="background:#fff;border:1px solid #E5E7EB;">
       <div class="card-body p-4">
-        <h6 class="text-white fw-bold mb-3">Bar Chart</h6>
-        <canvas id="barChart" height="200"></canvas>
+        <h6 class="fw-semibold text-dark mb-3">Bar Chart</h6>
+        <div style="min-height:260px"><canvas id="barChart" height="240" style="width:100%;height:240px"></canvas></div>
       </div>
     </div>
   </div>
   <div class="col-lg-6">
-    <div class="card border-0 shadow">
+    <div class="card mb-0" style="background:#fff;border:1px solid #E5E7EB;">
       <div class="card-body p-4">
-        <h6 class="text-white fw-bold mb-3">Pie Chart</h6>
-        <canvas id="pieChart" height="200"></canvas>
+        <h6 class="fw-semibold text-dark mb-3">Donut Chart</h6>
+        <div style="min-height:260px"><canvas id="pieChart" height="240" style="width:100%;height:240px"></canvas></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="card border-0 shadow mt-4">
+<div class="card mt-4" style="background:#fff;border:1px solid #E5E7EB;">
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-dark table-hover mb-0 align-middle">
+      <table class="table table-light table-hover mb-0 align-middle">
         <thead>
           <tr>
             <th>Rank</th>
@@ -63,13 +63,13 @@
                 {{ loop.index }}
               {% endif %}
             </td>
-            <td class="fw-semibold">{{ r.name }}</td>
+            <td class="fw-semibold text-dark candidate-name">{{ r.name }}</td>
             <td><span class="badge bg-primary">{{ r.party }}</span></td>
-            <td class="text-success fw-bold">{{ r.votes }}</td>
+            <td class="text-dark fw-bold">{{ r.votes }}</td>
             <td>{{ r.percentage }}%</td>
             <td style="min-width:120px">
-              <div class="progress" style="height:6px">
-                <div class="progress-bar bg-success" style="width:{{ r.percentage }}%"></div>
+              <div class="progress" style="height:8px;background:#f3f4f6;border-radius:999px">
+                <div class="progress-bar" role="progressbar" style="background:linear-gradient(90deg,#FDECF2,#E6F0FF);height:100%;border-radius:999px" data-pct="{{ r.percentage }}"></div>
               </div>
             </td>
           </tr>
@@ -82,31 +82,45 @@
 {% endblock %}
 
 {% block extra_js %}
+{% set rd = [] %}
+{% for r in results %}
+  {% set _ = rd.append({'name': r.name, 'votes': r.votes, 'pct': r.percentage}) %}
+{% endfor %}
+<script id="admin-results-data" type="application/json">{{ rd|tojson }}</script>
 <script>
-  const labels = [{% for r in results %}"{{ r.name | e }}",{% endfor %}];
-  const votes  = [{% for r in results %}{{ r.votes }},{% endfor %}];
-  const colors = ['#0d6efd','#198754','#ffc107','#dc3545','#0dcaf0','#6f42c1'];
+  const adminData = JSON.parse(document.getElementById('admin-results-data').textContent || '[]');
+  const labels = adminData.map(r => r.name);
+  const votes  = adminData.map(r => r.votes);
+  const pct    = adminData.map(r => r.pct);
+  // Soft pastel palette (no green shades)
+  const palette = ['#E6F0FF','#FDECF2','#FFF4E6','#EDE7FF','#FFF8E6','#F0F7FF'];
 
+  // Bar chart
   new Chart(document.getElementById('barChart'), {
     type: 'bar',
-    data: { labels, datasets: [{ label: 'Votes', data: votes, backgroundColor: colors, borderRadius: 6 }] },
+    data: { labels, datasets: [{ label: 'Votes', data: votes, backgroundColor: palette, borderRadius: 8, borderSkipped: false }] },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
-        x: { ticks: { color: '#adb5bd' }, grid: { color: '#343a40' } },
-        y: { ticks: { color: '#adb5bd' }, grid: { color: '#343a40' }, beginAtZero: true }
+        x: { ticks: { color: 'rgba(31,41,55,0.7)' }, grid: { display: false }, border: { display: false } },
+        y: { ticks: { color: 'rgba(31,41,55,0.6)', stepSize: 1 }, grid: { color: 'rgba(31,41,55,0.06)' }, beginAtZero: true }
       }
     }
   });
 
+  // Donut chart with 65% cutout
   new Chart(document.getElementById('pieChart'), {
     type: 'doughnut',
-    data: { labels, datasets: [{ data: votes, backgroundColor: colors, borderWidth: 2, borderColor: '#1a1d23' }] },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'bottom', labels: { color: '#adb5bd' } } }
-    }
+    data: { labels, datasets: [{ data: votes, backgroundColor: palette, borderWidth: 1, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'bottom', labels: { color: 'rgba(31,41,55,0.7)' } } } }
   });
+
+  // Fill progress bars from data-pct
+  requestAnimationFrame(() => document.querySelectorAll('.progress-bar[data-pct]').forEach(el => {
+    const v = Number(el.dataset.pct) || 0;
+    el.style.width = v + '%';
+  }));
 </script>
 {% endblock %}

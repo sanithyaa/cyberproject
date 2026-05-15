@@ -2,91 +2,353 @@
 {% block title %}Election Results – SecureVote{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <div class="text-center mb-5">
-    <i class="fas fa-chart-bar fa-3x text-info mb-3"></i>
-    <h2 class="text-white fw-bold">Election Results</h2>
-    <p class="text-muted">Total votes cast: <strong class="text-white">{{ total_votes }}</strong></p>
-  </div>
+<style>
+  :root {
+    --bg:          #F7F8F2;
+    --surface:     #FFFFFF;
+    --border:      #E5E7EB; /* soft border */
+    --primary:     #C3CC9B;
+    --accent:      #A8B58A;
+    --olive:       #8A9A5B;
+    --soft-bg:     #DDE3C7;
+    --text-h:      #1F2937;
+    --text-sub:    #6B7280;
+    --text-muted:  #94A07A;
+    --radius:      12px;
+  }
 
-  {% if winner and total_votes > 0 %}
-  <div class="card border-success shadow-lg mb-5 winner-card">
-    <div class="card-body text-center p-5">
-      <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
-      <h3 class="text-white fw-bold">Current Leader</h3>
-      <img src="{{ url_for('static', filename='uploads/' + winner.photo) }}"
-           alt="{{ winner.name }}" class="candidate-photo-lg my-3"
-           onerror="this.src='{{ url_for('static', filename='images/default_candidate.png') }}'">
-      <h4 class="text-success fw-bold">{{ winner.name }}</h4>
-      <span class="badge bg-primary fs-6 mb-2">{{ winner.party }}</span>
-      <p class="text-white fs-5">{{ winner.votes }} votes ({{ winner.percentage }}%)</p>
+  .results-page {
+    padding: 2.25rem 2.5rem 4rem;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text-h);
+  }
+
+  .page-title    { font-size: 1.75rem; font-weight: 700; color: var(--text-h); margin: 0 0 .2rem; }
+  .page-subtitle { font-size: .9rem; color: var(--text-sub); margin: 0 0 1.75rem; }
+
+  /* Stat row */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem 1.35rem 1.05rem;
+    box-shadow: 0 10px 22px rgba(31,41,55,0.04);
+  }
+  .stat-card-top  { display: flex; justify-content: space-between; align-items: flex-start; }
+  .stat-label     { font-size: .78rem; color: var(--text-muted); font-weight: 500; margin-bottom: .2rem; }
+  .stat-value     { font-size: 2rem; font-weight: 700; color: var(--text-h); line-height: 1.1; }
+  .stat-value-sm  { font-size: 1.2rem; font-weight: 700; color: var(--text-h); line-height: 1.3; padding-top: .1rem; }
+  .stat-icon      { font-size: 1.4rem; color: #c8c8be; margin-top: .1rem; }
+  .stat-sub       { font-size: .78rem; color: var(--text-sub); margin-top: .35rem; }
+
+  /* Main grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: start;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.6rem;
+    box-shadow: 0 12px 26px rgba(31,41,55,0.04);
+  }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.1rem;
+  }
+  .card-head-title { font-size: 1rem; font-weight: 700; color: var(--text-h); }
+  .live-badge {
+    font-size: .72rem; font-weight: 600;
+    color: var(--text-muted); letter-spacing: .04em;
+    display: flex; align-items: center; gap: .4rem;
+  }
+  .live-badge::before {
+    content: '';
+    width: 7px; height: 7px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* Winner panel */
+  .winner-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .winner-panel-title { font-size: .95rem; font-weight: 600; color: var(--text-h); margin-bottom: 1.1rem; }
+  .winner-center {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: .3rem;
+  }
+  .trophy { font-size: 1.8rem; }
+  .winner-photo {
+    width: 68px; height: 68px;
+    border-radius: 50%; object-fit: cover;
+    border: 2px solid var(--border);
+    margin: .5rem 0 .25rem;
+  }
+  .winner-name  { font-size: 1.1rem; font-weight: 700; color: var(--text-h); }
+  .winner-party {
+    display: inline-block;
+    font-size: .72rem; font-weight: 600;
+    background: #eff6ff; color: var(--blue-pill);
+    border: 1px solid #bfdbfe;
+    padding: .2rem .7rem; border-radius: 999px;
+    margin-top: .1rem;
+  }
+  .winner-pct-big { font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1; margin-top: .5rem; }
+  .winner-pct-sub { font-size: .75rem; color: var(--text-muted); }
+  .winner-votes-line { font-size: .85rem; color: var(--text-sub); margin-top: .1rem; }
+
+  .divider { width: 100%; height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+  .mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .mini-stat {
+    background: var(--bg); border-radius: 8px;
+    padding: .65rem .8rem;
+  }
+  .mini-stat-label { font-size: .7rem; color: var(--text-muted); font-weight: 500; }
+  .mini-stat-val   { font-size: 1.1rem; font-weight: 700; color: var(--text-h); }
+
+  /* Table card */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .table-card-head {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: .95rem; font-weight: 600; color: var(--text-h);
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: .72rem; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-sub); text-align: left;
+    padding: .75rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; background: var(--surface); }
+  tbody tr:nth-child(even) { background: #fbfbfb; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #f6f7f4; }
+  td { padding: .85rem 1.5rem; font-size: .88rem; color: var(--text-h); vertical-align: middle; }
+
+  .rank {
+    width: 26px; height: 26px; border-radius: 7px;
+    display: grid; place-items: center;
+    font-size: .75rem; font-weight: 700;
+    background: var(--bg); color: var(--text-sub);
+  }
+  .rank.gold { background: #fef3c7; color: #92400e; }
+
+  .cand-cell { display: flex; align-items: center; gap: .65rem; }
+  .cand-thumb {
+    width: 32px; height: 32px;
+    border-radius: 50%; object-fit: cover;
+    border: 1px solid var(--border);
+  }
+  .cand-name { font-weight: 600; }
+
+  .party-pill {
+    font-size: .72rem; font-weight: 600;
+    background: #eff6ff; color: var(--blue-pill);
+    border: 1px solid #bfdbfe;
+    padding: .2rem .65rem; border-radius: 999px;
+    display: inline-block;
+  }
+  .vote-val { font-weight: 700; }
+  .pct-val  { font-size: .82rem; color: var(--text-sub); }
+
+  .prog-wrap { width: 110px; }
+  .prog-track { height: 5px; background: #e8ede8; border-radius: 999px; overflow: hidden; }
+  .prog-fill  {
+    height: 100%; width: 0;
+    background: var(--olive);
+    border-radius: 999px;
+    transition: width .9s cubic-bezier(.4,0,.2,1);
+  }
+  .prog-fill.winner-bar { background: var(--green); }
+</style>
+
+<div class="results-page">
+
+  <div class="page-title">Election Results</div>
+  <div class="page-subtitle">Live vote counts and candidate standings</div>
+
+  <!-- Stat strip -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Total Votes</div>
+          <div class="stat-value">{{ total_votes }}</div>
+        </div>
+        <i class="fas fa-check-circle stat-icon"></i>
+      </div>
+      <div class="stat-sub">votes cast so far</div>
+    </div>
+
+    {% if winner %}
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Current Leader</div>
+          <div class="stat-value-sm">{{ winner.name }}</div>
+        </div>
+        <i class="fas fa-trophy stat-icon" style="color:#d4a017;"></i>
+      </div>
+      <div class="stat-sub">{{ winner.votes }} votes · {{ winner.percentage }}%</div>
+    </div>
+    {% endif %}
+
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Candidates</div>
+          <div class="stat-value">{{ results|length }}</div>
+        </div>
+        <i class="fas fa-users stat-icon"></i>
+      </div>
+      <div class="stat-sub">in this election</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card-top">
+        <div>
+          <div class="stat-label">Election Status</div>
+          <div class="stat-value-sm" style="padding-top:.2rem;">Active</div>
+        </div>
+        <i class="fas fa-chart-bar stat-icon"></i>
+      </div>
+      <div class="stat-sub">results are live</div>
     </div>
   </div>
-  {% endif %}
 
-  <!-- Bar Chart -->
-  <div class="card border-0 shadow mb-5">
-    <div class="card-body p-4">
-      <h5 class="text-white fw-bold mb-4">
-        <i class="fas fa-chart-bar me-2 text-info"></i>Vote Distribution
-      </h5>
-      <canvas id="resultsChart" height="100"></canvas>
+  <!-- Chart + Winner -->
+  <div class="main-grid">
+    <div class="card">
+          <div class="card-head">
+            <span class="card-head-title">Live Vote Distribution</span>
+            <span class="live-badge">Live</span>
+          </div>
+          <div style="min-height:260px">
+            <canvas id="resultsChart" height="240" style="width:100%;height:240px"></canvas>
+          </div>
     </div>
-  </div>
 
-  <!-- Results Table -->
-  <div class="card border-0 shadow">
-    <div class="card-body p-4">
-      <h5 class="text-white fw-bold mb-4">
-        <i class="fas fa-list me-2 text-primary"></i>Detailed Results
-      </h5>
-      <div class="table-responsive">
-        <table class="table table-dark table-hover align-middle">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Candidate</th>
-              <th>Party</th>
-              <th>Votes</th>
-              <th>Percentage</th>
-              <th>Progress</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for r in results %}
-            <tr>
-              <td>{{ loop.index }}</td>
-              <td>
-                <div class="d-flex align-items-center gap-2">
-                  <img src="{{ url_for('static', filename='uploads/' + r.photo) }}"
-                       alt="{{ r.name }}" class="candidate-thumb"
-                       onerror="this.src='{{ url_for('static', filename='images/default_candidate.png') }}'">
-                  <span class="fw-semibold">{{ r.name }}</span>
-                </div>
-              </td>
-              <td><span class="badge bg-primary">{{ r.party }}</span></td>
-              <td class="fw-bold text-success">{{ r.votes }}</td>
-              <td>{{ r.percentage }}%</td>
-              <td style="min-width:150px">
-                <div class="progress" style="height:8px">
-                  <div class="progress-bar bg-success" style="width:{{ r.percentage }}%"></div>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+    {% if winner and total_votes > 0 %}
+    <div class="winner-panel">
+      <div class="winner-panel-title">Current Leader</div>
+      <div class="winner-center">
+        <span class="trophy">🏆</span>
+        <img src="{{ url_for('static', filename='uploads/' + (winner.photo or 'default_candidate.svg')) }}"
+             alt="{{ winner.name }}" class="winner-photo"
+             data-default-src="{{ url_for('static', filename='images/default_candidate.svg') }}">
+        <div class="winner-name">{{ winner.name }}</div>
+        <span class="winner-party">{{ winner.party }}</span>
+        <div class="winner-pct-big">{{ winner.percentage }}%</div>
+        <div class="winner-pct-sub">vote share</div>
+        <div class="winner-votes-line">{{ winner.votes }} votes</div>
+      </div>
+      <div class="divider"></div>
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <div class="mini-stat-label">Total Votes</div>
+          <div class="mini-stat-val">{{ total_votes }}</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-label">Candidates</div>
+          <div class="mini-stat-val">{{ results|length }}</div>
+        </div>
       </div>
     </div>
+    {% endif %}
   </div>
+
+  <!-- Detailed table -->
+  <div class="table-card">
+    <div class="table-card-head">Detailed Results</div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Candidate</th>
+            <th>Party</th>
+            <th>Votes</th>
+            <th>Share</th>
+            <th>Progress</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in results %}
+          <tr>
+            <td><div class="rank {% if loop.index == 1 %}gold{% endif %}">{{ loop.index }}</div></td>
+            <td>
+              <div class="cand-cell">
+                <img src="{{ url_for('static', filename='uploads/' + (r.photo or 'default_candidate.svg')) }}"
+                     alt="{{ r.name }}" class="cand-thumb"
+                     data-default-src="{{ url_for('static', filename='images/default_candidate.svg') }}">
+                <span class="cand-name">{{ r.name }}</span>
+              </div>
+            </td>
+            <td><span class="party-pill">{{ r.party }}</span></td>
+            <td><span class="vote-val">{{ r.votes }}</span></td>
+            <td><span class="pct-val">{{ r.percentage }}%</span></td>
+            <td>
+              <div class="prog-wrap">
+                <div class="prog-track">
+                  <div class="prog-fill {% if loop.index == 1 %}winner-bar{% endif %}" data-pct="{{ r.percentage }}"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
+{% set rd = [] %}
+{% for r in results %}
+  {% set _ = rd.append({'name': r.name, 'votes': r.votes}) %}
+{% endfor %}
+<script id="results-data" type="application/json">{{ rd|tojson }}</script>
 <script>
-  const labels = [{% for r in results %}"{{ r.name | e }}",{% endfor %}];
-  const votes  = [{% for r in results %}{{ r.votes }},{% endfor %}];
-  const colors = ['#0d6efd','#198754','#ffc107','#dc3545','#0dcaf0','#6f42c1','#fd7e14'];
+  const resultsData = JSON.parse(document.getElementById('results-data').textContent || '[]');
+  const labels = resultsData.map(r => r.name);
+  const votes  = resultsData.map(r => r.votes);
+  const palette = ['#C3CC9B','#A8B58A','#8A9A5B','#DDE3C7','#BFC9A0','#D7E0C2'];
+  const bgColors = votes.map((_, i) => palette[i % palette.length]);
 
   new Chart(document.getElementById('resultsChart'), {
     type: 'bar',
@@ -95,28 +357,51 @@
       datasets: [{
         label: 'Votes',
         data: votes,
-        backgroundColor: colors.slice(0, labels.length),
-        borderRadius: 6,
+        backgroundColor: bgColors,
+        borderRadius: 8,
+        borderSkipped: false,
       }]
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.parsed.y} votes`
-          }
+          backgroundColor: '#111827',
+          titleColor: '#fff',
+          bodyColor: '#e5e7eb',
+          padding: 10,
+          cornerRadius: 8,
+          callbacks: { label: ctx => `  ${ctx.parsed.y} votes` }
         }
       },
       scales: {
-        x: { ticks: { color: '#adb5bd' }, grid: { color: '#343a40' } },
-        y: { ticks: { color: '#adb5bd' }, grid: { color: '#343a40' }, beginAtZero: true }
+        x: {
+          ticks: { color: 'rgba(31,41,55,0.7)', font: { size: 12 } },
+          grid: { display: false },
+          border: { display: false }
+        },
+        y: {
+          ticks: { color: 'rgba(31,41,55,0.6)', font: { size: 11 }, stepSize: 1 },
+          grid: { color: 'rgba(31,41,55,0.06)' },
+          border: { display: false },
+          beginAtZero: true
+        }
       }
     }
   });
 
-  // Auto-refresh every 30 seconds
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.prog-fill[data-pct]').forEach(el => {
+      el.style.width = (Number(el.dataset.pct) || 0) + '%';
+    });
+  });
+
+  document.querySelectorAll('img[data-default-src]').forEach(img => {
+    img.onerror = function() { this.src = this.dataset.defaultSrc; this.onerror = null; };
+  });
+
   setTimeout(() => location.reload(), 30000);
 </script>
 {% endblock %}

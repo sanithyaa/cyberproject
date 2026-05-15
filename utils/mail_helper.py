@@ -17,6 +17,7 @@ def get_totp(secret: str) -> pyotp.TOTP:
 
 
 def send_otp_email(user_email: str, otp_code: str):
+    print("🔐 OTP for", user_email, ":", otp_code)
     """Send a one-time password to the user's email."""
     body = f"""
     <h2>Your Voting System OTP</h2>

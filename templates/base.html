@@ -16,50 +16,57 @@
 </head>
 <body>
 
-<!-- ── Navbar ──────────────────────────────────────────────────────────────── -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary-dark shadow-sm">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="{{ url_for('public.index') }}">
-      <i class="fas fa-vote-yea me-2"></i>SecureVote
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav ms-auto align-items-center gap-1">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('public.index') }}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('public.about') }}">About</a></li>
+<!-- Topbar (minimal) -->
+<header class="topbar-sticky">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('public.index') }}">
+        <i class="fas fa-vote-yea"></i>
+        <span class="ms-1">SecureVote</span>
+      </a>
+    </div>
 
-        {% if current_user.is_authenticated %}
-          {% if current_user.is_admin %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}">
-              <i class="fas fa-tachometer-alt me-1"></i>Admin Panel</a></li>
-          {% else %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('voter.dashboard') }}">
-              <i class="fas fa-home me-1"></i>Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('voter.vote') }}">
-              <i class="fas fa-check-circle me-1"></i>Vote</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('voter.results') }}">
-              <i class="fas fa-chart-bar me-1"></i>Results</a></li>
-          {% endif %}
-          <li class="nav-item">
-            <span class="nav-link text-light opacity-75">
-              <i class="fas fa-user-circle me-1"></i>{{ current_user.username }}
-            </span>
-          </li>
-          <li class="nav-item">
-            <a class="btn btn-outline-light btn-sm" href="{{ url_for('auth.logout') }}">
-              <i class="fas fa-sign-out-alt me-1"></i>Logout
-            </a>
-          </li>
-        {% else %}
-          <li class="nav-item"><a class="btn btn-outline-light btn-sm me-1" href="{{ url_for('auth.login') }}">Login</a></li>
-          <li class="nav-item"><a class="btn btn-light btn-sm text-primary" href="{{ url_for('auth.register') }}">Register</a></li>
-        {% endif %}
-      </ul>
+    <div class="d-flex align-items-center gap-2">
+      {% if current_user.is_authenticated %}
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">{{ current_user.username }}</span>
+          <a class="btn btn-outline btn-sm" href="{{ url_for('auth.logout') }}">
+            <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </div>
+      {% else %}
+        <div class="d-flex align-items-center gap-2">
+          <a class="btn btn-outline btn-sm" href="{{ url_for('auth.login') }}">Login</a>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">Register</a>
+        </div>
+      {% endif %}
     </div>
   </div>
-</nav>
+</header>
+
+<!-- Sidebar (primary navigation) -->
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">SV</div>
+      <div class="brand-text">
+        <div class="name">SecureVote</div>
+        <div class="tag">Trusted elections</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('public.index') }}" class="{% if request.path == url_for('public.index') %}active{% endif %}">Home</a>
+      <a href="{{ url_for('voter.vote') }}" class="{% if request.path.startswith(url_for('voter.vote')) %}active{% endif %}">Vote</a>
+      <a href="{{ url_for('voter.results') }}" class="{% if request.path.startswith(url_for('voter.results')) %}active{% endif %}">Results</a>
+      <a href="{{ url_for('public.about') }}" class="{% if request.path == url_for('public.about') %}active{% endif %}">About</a>
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}" class="{% if request.path.startswith(url_for('admin.dashboard')) %}active{% endif %}">Admin</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-footer">&copy; SecureVote</div>
+  </aside>
+
+  <div class="main-content">
 
 <!-- ── Flash messages ──────────────────────────────────────────────────────── -->
 <div class="container mt-3">

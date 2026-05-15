@@ -2,27 +2,35 @@
 {% block title %}Manage Users – Admin{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-  <h3 class="text-white fw-bold">
-    <i class="fas fa-user-cog me-2 text-info"></i>Voter Management
-  </h3>
+<div class="mb-3">
+  <h3 class="mb-0">Voter Management</h3>
   <p class="text-muted">{{ users|length }} registered voters</p>
 </div>
 
-<div class="card border-0 shadow">
-  <div class="card-body p-0">
+<div class="users-toolbar">
+  <div class="d-flex align-items-center gap-2">
+    <input type="search" name="q" placeholder="Search users by name or email" class="form-control search-input" />
+  </div>
+    <div>
+    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-primary">Add User</a>
+  </div>
+</div>
+
+<div class="users-card">
+  <div class="card-body">
+    {% if users %}
     <div class="table-responsive">
-      <table class="table table-dark table-hover mb-0 align-middle">
+      <table class="users-table">
         <thead>
           <tr>
-            <th>#</th>
+            <th style="width:40px">#</th>
             <th>Username</th>
             <th>Email</th>
             <th>Registered</th>
-            <th>Last Login</th>
+            <th>Last login</th>
             <th>Voted</th>
             <th>Status</th>
-            <th>Actions</th>
+            <th style="width:120px">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -32,39 +40,33 @@
             <td class="fw-semibold">{{ user.username }}</td>
             <td class="text-muted small">{{ user.email }}</td>
             <td><small class="text-muted">{{ user.created_at.strftime('%Y-%m-%d') }}</small></td>
-            <td>
-              <small class="text-muted">
-                {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else '—' }}
-              </small>
-            </td>
+            <td><small class="text-muted">{{ user.last_login | timeago }}</small></td>
             <td>
               {% if user.has_voted %}
-                <span class="badge bg-success">Yes</span>
+                <span class="badge-yes">Yes</span>
               {% else %}
-                <span class="badge bg-secondary">No</span>
+                <span class="badge-no">No</span>
               {% endif %}
             </td>
             <td>
               {% if user.is_active %}
-                <span class="badge bg-success">Active</span>
+                <span class="badge-yes">Active</span>
               {% else %}
-                <span class="badge bg-danger">Disabled</span>
+                <span class="badge-no" style="background:#FEE2E2;color:#991B1B">Blocked</span>
               {% endif %}
             </td>
             <td>
               <div class="d-flex gap-2">
                 <form method="POST" action="{{ url_for('admin.toggle_user', uid=user.id) }}">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                  <button type="submit" class="btn btn-sm btn-outline-{% if user.is_active %}warning{% else %}success{% endif %}"
-                          title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
-                    <i class="fas fa-{% if user.is_active %}ban{% else %}check{% endif %}"></i>
+                  <button type="submit" class="small-action-btn" title="{% if user.is_active %}Block{% else %}Unblock{% endif %}">
+                    <i class="fas fa-user-shield"></i>
                   </button>
                 </form>
                 {% if user.has_voted %}
-                <form method="POST" action="{{ url_for('admin.reset_vote', uid=user.id) }}"
-                      onsubmit="return confirm('Reset vote for {{ user.username }}?')">
+                <form method="POST" action="{{ url_for('admin.reset_vote', uid=user.id) }}" onsubmit="return confirm('Reset vote for {{ user.username }}?')">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                  <button type="submit" class="btn btn-sm btn-outline-danger" title="Reset Vote">
+                  <button type="submit" class="small-action-btn" title="Reset Vote">
                     <i class="fas fa-undo"></i>
                   </button>
                 </form>
@@ -72,14 +74,19 @@
               </div>
             </td>
           </tr>
-          {% else %}
-          <tr>
-            <td colspan="8" class="text-center text-muted py-4">No voters registered yet.</td>
-          </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
+    {% else %}
+      <div class="users-empty">
+        <div class="empty-state">
+          <i class="fas fa-user-friends fa-3x text-muted"></i>
+          <div class="es-title">No users found</div>
+          <div class="es-desc">Users will appear here once registered.</div>
+        </div>
+      </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

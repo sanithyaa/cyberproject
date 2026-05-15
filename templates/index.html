@@ -2,106 +2,185 @@
 {% block title %}Home – SecureVote{% endblock %}
 
 {% block content %}
-<!-- Hero -->
-<section class="hero-section text-white text-center py-5">
-  <div class="container py-4">
-    <div class="hero-icon mb-4">
-      <i class="fas fa-vote-yea fa-4x text-success"></i>
-    </div>
-    <h1 class="display-4 fw-bold mb-3">Secure Online Voting System</h1>
-    <p class="lead mb-4 opacity-90">
-      Cast your vote safely and securely. Protected by industry-standard encryption,
-      CSRF tokens, and role-based access control.
-    </p>
-    {% if current_user.is_authenticated %}
-      {% if current_user.is_admin %}
-        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-success btn-lg me-2">
-          <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
-        </a>
-      {% else %}
-        <a href="{{ url_for('voter.vote') }}" class="btn btn-success btn-lg me-2">
-          <i class="fas fa-check-circle me-2"></i>Cast Your Vote
-        </a>
-        <a href="{{ url_for('voter.results') }}" class="btn btn-outline-light btn-lg">
-          <i class="fas fa-chart-bar me-2"></i>View Results
-        </a>
-      {% endif %}
-    {% else %}
-      <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg me-2">
-        <i class="fas fa-user-plus me-2"></i>Register to Vote
-      </a>
-      <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg">
-        <i class="fas fa-sign-in-alt me-2"></i>Login
-      </a>
-    {% endif %}
-
-    {% if election %}
-    <div class="mt-4">
-      <span class="badge bg-success fs-6 px-3 py-2">
-        <i class="fas fa-circle me-1 blink"></i>Election Active: {{ election.title }}
-      </span>
-    </div>
-    {% endif %}
-  </div>
-</section>
-
-<!-- Security Features -->
-<section class="py-5 bg-dark-secondary">
-  <div class="container">
-    <h2 class="text-center text-white mb-5 fw-bold">
-      <i class="fas fa-shield-alt me-2 text-success"></i>Security Features
-    </h2>
-    <div class="row g-4">
-      {% set features = [
-        ('lock', 'Password Hashing', 'Passwords are hashed with bcrypt — never stored in plain text.', 'success'),
-        ('user-shield', 'Role-Based Access', 'Admins and voters have strictly separated permissions.', 'info'),
-        ('key', 'CSRF Protection', 'Every form is protected with a unique CSRF token.', 'warning'),
-        ('database', 'SQL Injection Safe', 'All queries use parameterised statements via SQLAlchemy ORM.', 'danger'),
-        ('code', 'XSS Prevention', 'All user inputs are sanitised and HTML-escaped before rendering.', 'primary'),
-        ('mobile-alt', 'OTP Verification', 'Two-factor authentication via one-time passwords.', 'success'),
-        ('clock', 'Session Timeout', 'Sessions expire automatically after 30 minutes of inactivity.', 'info'),
-        ('file-alt', 'Audit Logs', 'Every action is recorded in an immutable audit trail.', 'warning'),
-      ] %}
-      {% for icon, title, desc, color in features %}
-      <div class="col-md-6 col-lg-3">
-        <div class="card security-card h-100 border-0 shadow-sm">
-          <div class="card-body text-center p-4">
-            <div class="feature-icon mb-3">
-              <i class="fas fa-{{ icon }} fa-2x text-{{ color }}"></i>
+  <div id="bg-canvas"></div>
+  <main>
+        <section class="hero-section">
+          <div class="hero-inner container">
+            <div class="hero-copy">
+              <h2 class="hero-title">Secure. Private. Verifiable.</h2>
+              <p class="hero-sub">Modern online voting built for institutions that value security and trust. Auditable logs, voter privacy, and simple workflows — deployed with enterprise-grade hygiene.</p>
+              <div class="hero-ctas">
+                <a href="/vote" class="btn btn-cta">Vote Now</a>
+                <a href="#how" class="btn btn-outline">How it works</a>
+              </div>
             </div>
-            <h5 class="card-title text-white fw-semibold">{{ title }}</h5>
-            <p class="card-text text-muted small">{{ desc }}</p>
+            <div class="hero-card">
+              <div class="status">Live demo</div>
+              <div class="card-content">
+                <div class="meter">
+                  <div class="meter-bar" style="width:72%"></div>
+                </div>
+                <div class="card-row">
+                  <div>
+                    <div class="card-number">1,254</div>
+                    <div class="card-label">Active voters</div>
+                  </div>
+                  <div>
+                    <div class="card-number">3</div>
+                    <div class="card-label">Elections running</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
+        </section>
 
-<!-- Candidates Preview -->
-{% if candidates %}
-<section class="py-5">
-  <div class="container">
-    <h2 class="text-center text-white mb-5 fw-bold">
-      <i class="fas fa-users me-2 text-info"></i>Candidates
-    </h2>
-    <div class="row g-4 justify-content-center">
-      {% for c in candidates %}
-      <div class="col-md-4 col-lg-3">
-        <div class="card candidate-card border-0 shadow text-center h-100">
-          <div class="card-body p-4">
-            <img src="{{ url_for('static', filename='uploads/' + c.photo) }}"
-                 alt="{{ c.name }}" class="candidate-photo mb-3"
-                 onerror="this.src='{{ url_for('static', filename='images/default_candidate.png') }}'">
-            <h5 class="text-white fw-bold">{{ c.name }}</h5>
-            <span class="badge bg-primary">{{ c.party }}</span>
+        <section id="features" class="section features-section container">
+          <h3 class="section-title">Why organisations trust SecureVote</h3>
+          <div class="features-grid">
+            <article class="feature-card">
+              <div class="feature-icon">🔒</div>
+              <h4>End-to-end security</h4>
+              <p>Strong cryptography, audit logs and role-based controls keep ballots safe.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon">🧾</div>
+              <h4>Transparent audits</h4>
+              <p>Immutable logs and verifiable results make auditing simple and reliable.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon">⚡</div>
+              <h4>Fast turnout</h4>
+              <p>Optimised flow and accessibility increase participation without sacrificing security.</p>
+            </article>
+            <article class="feature-card">
+              <div class="feature-icon">🔐</div>
+              <h4>Privacy by design</h4>
+              <p>Voter anonymity and minimal data collection are enforced by default.</p>
+            </article>
+          </div>
+        </section>
+
+        <section id="security" class="section security-section container">
+          <h3 class="section-title">Security highlights</h3>
+          <div class="security-grid">
+            <div class="glass security-card">
+              <h5>Multi-layer defence</h5>
+              <p>Network isolation, hardened servers, and continual monitoring.</p>
+            </div>
+            <div class="glass security-card">
+              <h5>Auditable cryptography</h5>
+              <p>Open algorithms, verifiable tallies and third-party validation support.</p>
+            </div>
+            <div class="glass security-card">
+              <h5>Compliance-ready</h5>
+              <p>Designed to meet regulatory and privacy standards for public and private elections.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="how" class="section how-section container">
+          <h3 class="section-title">How it works</h3>
+          <div class="how-steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <div class="step-body">
+                <h4>Register voters</h4>
+                <p>Upload or sync eligible voters, set election parameters and time windows.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <div class="step-body">
+                <h4>Run election</h4>
+                <p>Voters authenticate, cast ballots, and the system records immutable events.</p>
+              </div>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <div class="step-body">
+                <h4>Verify results</h4>
+                <p>Publish verifiable results and provide audited logs for stakeholders.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section cta-section container">
+          <div class="cta-card glass">
+            <h3>Ready to run your next secure election?</h3>
+            <p>Start a trial, request a demo, or explore our integrations.</p>
+            <div class="cta-actions">
+              <a class="btn btn-primary" href="/register">Start free trial</a>
+              <a class="btn btn-outline" href="/about">Request demo</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="site-footer container">
+        <div>© SecureVote — Built for trustworthy organisations</div>
+        <div>Privacy • Security • Terms</div>
+      </footer>
+
+  <!-- Security Features (kept as dynamic cards) -->
+  <section class="py-5">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold">
+        <i class="fas fa-shield-alt me-2 text-muted"></i>Security Features
+      </h2>
+      <div class="row g-4">
+        {% set features = [
+          ('lock', 'Password Hashing', 'Passwords are hashed with bcrypt — never stored in plain text.', 'success'),
+          ('user-shield', 'Role-Based Access', 'Admins and voters have strictly separated permissions.', 'info'),
+          ('key', 'CSRF Protection', 'Every form is protected with a unique CSRF token.', 'warning'),
+          ('database', 'SQL Injection Safe', 'All queries use parameterised statements via SQLAlchemy ORM.', 'danger'),
+          ('code', 'XSS Prevention', 'All user inputs are sanitised and HTML-escaped before rendering.', 'primary'),
+          ('mobile-alt', 'OTP Verification', 'Two-factor authentication via one-time passwords.', 'success'),
+          ('clock', 'Session Timeout', 'Sessions expire automatically after 30 minutes of inactivity.', 'info'),
+          ('file-alt', 'Audit Logs', 'Every action is recorded in an immutable audit trail.', 'warning'),
+        ] %}
+        {% for icon, title, desc, color in features %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card security-card h-100 border-0">
+              <div class="card-body text-center p-4">
+                <div class="feature-icon mb-3">
+                  <i class="fas fa-{{ icon }} fa-2x text-muted"></i>
+                </div>
+                <h5 class="card-title fw-semibold">{{ title }}</h5>
+                <p class="card-text text-muted small">{{ desc }}</p>
+              </div>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Candidates Preview -->
+  {% if candidates %}
+  <section class="py-5">
+    <div class="container">
+      <h2 class="text-center mb-5 fw-bold">
+        <i class="fas fa-users me-2 text-muted"></i>Candidates
+      </h2>
+      <div class="row g-4 justify-content-center">
+        {% for c in candidates %}
+        <div class="col-md-4 col-lg-3">
+          <div class="card candidate-card border-0 h-100">
+            <div class="card-body p-4">
+        <img src="{{ url_for('static', filename='uploads/' + (c.photo or 'default_candidate.png')) }}"
+          alt="{{ c.name }}" class="candidate-photo mb-3"
+          data-default-src="{{ url_for('static', filename='images/default_candidate.png') }}">
+              <h5 class="fw-bold">{{ c.name }}</h5>
+              <span class="badge bg-light text-dark border">{{ c.party }}</span>
+            </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
-</section>
-{% endif %}
+  </section>
+  {% endif %}
+
 {% endblock %}
